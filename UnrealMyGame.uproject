@@ -1,0 +1,13 @@
+{
+	"FileVersion": 3,
+	"EngineAssociation": "{14013710-4CA3-6007-B517-D397CCA40998}",
+	"Category": "",
+	"Description": "",
+	"Modules": [
+		{
+			"Name": "UnrealMyGame",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	]
+}
