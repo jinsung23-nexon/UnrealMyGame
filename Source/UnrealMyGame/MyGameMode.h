@@ -3,17 +3,16 @@
 #pragma once
 
 #include "GameFramework/GameMode.h"
-#include "UnrealMyGameGameMode.generated.h"
+#include "MyGameMode.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class UNREALMYGAME_API AUnrealMyGameGameMode : public AGameMode
+class UNREALMYGAME_API AMyGameMode : public AGameMode
 {
 	GENERATED_BODY()
 	
-	
-	
-	
+public:
+	AMyGameMode();
 };
