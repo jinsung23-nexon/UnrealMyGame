@@ -2,11 +2,12 @@
 
 #include "UnrealMyGame.h"
 #include "MyGameMode.h"
+#include "MgCharacter.h"
 
 AMyGameMode::AMyGameMode()
 	: Super()
 {
-	DefaultPawnClass = NULL;
+	DefaultPawnClass = AMgCharacter::StaticClass();
 	HUDClass = NULL;
 	GameStateClass = NULL;
 	SpectatorClass = NULL;
