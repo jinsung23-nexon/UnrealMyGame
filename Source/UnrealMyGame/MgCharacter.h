@@ -39,6 +39,9 @@ protected:
 
 	void ZoomIn() { bZoomingIn = true; }
 	void ZoomOut() { bZoomingIn = false; }
+	void Keyboard1();
+	void Keyboard2();
+	void Keyboard3();
 	void MoveForward(float AxisValue) { MovementInput.X = FMath::Clamp<float>(AxisValue, -1.0f, 1.0f); }
 	void MoveRight(float AxisValue) { MovementInput.Y = FMath::Clamp<float>(AxisValue, -1.0f, 1.0f); }
 	void YawCamera(float AxisValue) { CameraInput.X = FMath::Clamp<float>(AxisValue, -1.0f, 1.0f); }

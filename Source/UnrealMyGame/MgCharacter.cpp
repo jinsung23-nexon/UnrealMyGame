@@ -2,6 +2,7 @@
 
 #include "UnrealMyGame.h"
 #include "MgCharacter.h"
+#include "MgBlockCubeActor.h"
 
 
 // Sets default values
@@ -39,8 +40,7 @@ AMgCharacter::AMgCharacter()
 void AMgCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	SetActorLocationAndRotation(FVector(300.f, 300.f, 100.f), FRotator(0.f, 0.f, 0.f));
+
 }
 
 // Called every frame
@@ -70,7 +70,6 @@ void AMgCharacter::Tick( float DeltaTime )
 	// Movement XY
 	if (!MovementInput.IsZero())
 	{
-		//이동 입력 축 값에 초당 100 유닛 스케일을 적용합니다
 		MovementInput = MovementInput.SafeNormal() * 500.0f;
 		FVector NewLocation = GetActorLocation();
 		NewLocation += GetActorForwardVector() * MovementInput.X * DeltaTime;
@@ -84,9 +83,12 @@ void AMgCharacter::SetupPlayerInputComponent(class UInputComponent* InputCompone
 {
 	Super::SetupPlayerInputComponent(InputComponent);
 
-	// MyGameCode : ActionMapping 
+	// MyGameCode : ActionMapping
 	InputComponent->BindAction("ZoomIn", IE_Pressed, this, &AMgCharacter::ZoomIn);
 	InputComponent->BindAction("ZoomOut", IE_Pressed, this, &AMgCharacter::ZoomOut);
+	InputComponent->BindAction("Keyboard1", IE_Pressed, this, &AMgCharacter::Keyboard1);
+	InputComponent->BindAction("Keyboard2", IE_Pressed, this, &AMgCharacter::Keyboard2);
+	InputComponent->BindAction("Keyboard3", IE_Pressed, this, &AMgCharacter::Keyboard3);
 	// MyGameCode : AxisMapping
 	InputComponent->BindAxis("MoveForward", this, &AMgCharacter::MoveForward);
 	InputComponent->BindAxis("MoveRight", this, &AMgCharacter::MoveRight);
@@ -94,3 +96,20 @@ void AMgCharacter::SetupPlayerInputComponent(class UInputComponent* InputCompone
 	InputComponent->BindAxis("MouseY", this, &AMgCharacter::PitchCamera);
 }
 
+void AMgCharacter::Keyboard1()
+{
+	// Create Block Test
+	const FRotator SpawnRotation = GetControlRotation();
+	const FVector SpawnLocation = GetActorLocation() + SpawnRotation.RotateVector(FVector(500.f, 0.f, 100.f));
+	UWorld* const World = GetWorld();
+	if (World != NULL)
+	{
+		World->SpawnActor<AMgBlockCubeActor>(AMgBlockCubeActor::StaticClass(), SpawnLocation, SpawnRotation);
+	}
+}
+void AMgCharacter::Keyboard2()
+{
+}
+void AMgCharacter::Keyboard3()
+{
+}
