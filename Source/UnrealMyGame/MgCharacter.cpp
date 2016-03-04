@@ -3,6 +3,7 @@
 #include "UnrealMyGame.h"
 #include "MgCharacter.h"
 #include "MgBlockCubeActor.h"
+#include "MgTetrisManager.h"
 
 
 // Sets default values
@@ -70,7 +71,7 @@ void AMgCharacter::Tick( float DeltaTime )
 	// Movement XY
 	if (!MovementInput.IsZero())
 	{
-		MovementInput = MovementInput.SafeNormal() * 500.0f;
+		MovementInput = MovementInput.GetSafeNormal() * 500.0f;
 		FVector NewLocation = GetActorLocation();
 		NewLocation += GetActorForwardVector() * MovementInput.X * DeltaTime;
 		NewLocation += GetActorRightVector() * MovementInput.Y * DeltaTime;
@@ -109,6 +110,15 @@ void AMgCharacter::Keyboard1()
 }
 void AMgCharacter::Keyboard2()
 {
+	for (auto ActorItr = TActorIterator<AActor>(GetWorld()); ActorItr; ++ActorItr)
+	{
+		if (ActorItr->GetName().StartsWith("MgTetrisManager"))
+		{
+			AMgTetrisManager* Manager = Cast<AMgTetrisManager>(*ActorItr);
+			Manager->CreateNewBlock();
+			break;
+		}
+	}
 }
 void AMgCharacter::Keyboard3()
 {
