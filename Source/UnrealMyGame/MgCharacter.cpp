@@ -42,6 +42,14 @@ void AMgCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
+	for (auto ActorItr = TActorIterator<AActor>(GetWorld()); ActorItr; ++ActorItr)
+	{
+		if (ActorItr->GetName().StartsWith("MgTetrisManager"))
+		{
+			TetrisManager = Cast<AMgTetrisManager>(*ActorItr);
+			break;
+		}
+	}
 }
 
 // Called every frame
@@ -84,6 +92,12 @@ void AMgCharacter::SetupPlayerInputComponent(class UInputComponent* InputCompone
 {
 	Super::SetupPlayerInputComponent(InputComponent);
 
+	// MyGameCode : KeyMapping
+	InputComponent->BindKey(EKeys::Up, IE_Pressed, this, &AMgCharacter::KeyUp);
+	InputComponent->BindKey(EKeys::Down, IE_Pressed, this, &AMgCharacter::KeyDown);
+	InputComponent->BindKey(EKeys::Left, IE_Pressed, this, &AMgCharacter::KeyLeft);
+	InputComponent->BindKey(EKeys::Right, IE_Pressed, this, &AMgCharacter::KeyRight);
+	InputComponent->BindKey(EKeys::SpaceBar, IE_Pressed, this, &AMgCharacter::KeySpace);
 	// MyGameCode : ActionMapping
 	InputComponent->BindAction("ZoomIn", IE_Pressed, this, &AMgCharacter::ZoomIn);
 	InputComponent->BindAction("ZoomOut", IE_Pressed, this, &AMgCharacter::ZoomOut);
@@ -96,6 +110,12 @@ void AMgCharacter::SetupPlayerInputComponent(class UInputComponent* InputCompone
 	InputComponent->BindAxis("MouseX", this, &AMgCharacter::YawCamera);
 	InputComponent->BindAxis("MouseY", this, &AMgCharacter::PitchCamera);
 }
+
+void AMgCharacter::KeyUp() { TetrisManager->MoveBlock(1, 0); }
+void AMgCharacter::KeyDown() { TetrisManager->MoveBlock(-1, 0); }
+void AMgCharacter::KeyLeft() { TetrisManager->MoveBlock(0, -1); }
+void AMgCharacter::KeyRight() { TetrisManager->MoveBlock(0, 1); }
+void AMgCharacter::KeySpace() { }
 
 void AMgCharacter::Keyboard1()
 {
@@ -110,16 +130,12 @@ void AMgCharacter::Keyboard1()
 }
 void AMgCharacter::Keyboard2()
 {
-	for (auto ActorItr = TActorIterator<AActor>(GetWorld()); ActorItr; ++ActorItr)
+	if (TetrisManager != NULL)
 	{
-		if (ActorItr->GetName().StartsWith("MgTetrisManager"))
-		{
-			AMgTetrisManager* Manager = Cast<AMgTetrisManager>(*ActorItr);
-			Manager->CreateNewBlock();
-			break;
-		}
+		TetrisManager->CreateNewBlock();
 	}
 }
 void AMgCharacter::Keyboard3()
 {
 }
+

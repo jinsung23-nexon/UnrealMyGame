@@ -25,18 +25,28 @@ public:
 protected:
     UPROPERTY(EditAnywhere)
     int8 MapSize;
-    UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere)
+	int8 StartHeight;
     int8 MapHeight;
+	UPROPERTY(VisibleAnywhere)
+	int8 CurHeight;
 	UPROPERTY(EditAnywhere)
 	float BlockFallPeriod;
 	float BlockFallSync;
-	int8 CubeNum;
+	int8 FallingCubeNum;
+	FVector BaseLocation;
+
+	int X, Y, Z;
 
     TArray<AMgBlockCubeActor*> PiledCubeArray;
     TArray<AMgBlockCubeActor*> FallingCubeArray;
 
 public:
+	int GetTetrisIndex(int x, int y, int z);
+	FVector GetCubeLocation(AMgBlockCubeActor* CubeActor);
 	void CreateNewBlock();
 	void MoveBlock(int x, int y);
+	void DownBlock();
+	void StopBlock();
 	
 };

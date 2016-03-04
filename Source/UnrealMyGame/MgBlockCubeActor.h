@@ -21,16 +21,12 @@ public:
 	virtual void Tick( float DeltaSeconds ) override;
 
 protected:
-	bool bIsFalling;
 	int X, Y, Z;
-	FVector BaseLocation;
 
 public:
 	int GetX() { return X; }
 	int GetY() { return Y; }
 	int GetZ() { return Z; }
-	void SetFalling(bool falling, const FVector location);
-	void SetCoordinate(int x, int y, int z);
-	void AddCoordinate(int x, int y, int z);
+	void SetCoordinate(int x, int y, int z) { this->X = x; this->Y = y; this->Z = z; }
 
 };

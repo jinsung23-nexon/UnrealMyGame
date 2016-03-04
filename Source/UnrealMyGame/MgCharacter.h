@@ -5,6 +5,8 @@
 #include "GameFramework/Character.h"
 #include "MgCharacter.generated.h"
 
+class AMgTetrisManager;
+
 UCLASS()
 class UNREALMYGAME_API AMgCharacter : public ACharacter
 {
@@ -30,13 +32,18 @@ protected:
 	UPROPERTY(EditAnywhere)
 	USpringArmComponent* MyCameraSpringArm;
 	UCameraComponent* MyCamera;
+	AMgTetrisManager* TetrisManager;
 
 	FVector2D MovementInput;
 	FVector2D CameraInput;
-	UPROPERTY(EditAnywhere)
 	float ZoomFactor;
 	bool bZoomingIn;
 
+	void KeyUp();
+	void KeyDown();
+	void KeyLeft();
+	void KeyRight();
+	void KeySpace();
 	void ZoomIn() { bZoomingIn = true; }
 	void ZoomOut() { bZoomingIn = false; }
 	void Keyboard1();

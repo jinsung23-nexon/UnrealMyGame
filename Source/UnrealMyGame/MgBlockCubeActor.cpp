@@ -18,8 +18,6 @@ AMgBlockCubeActor::AMgBlockCubeActor()
 		Cube->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));
 		RootComponent = Cube;
 	}
-
-	bIsFalling = true;
 }
 
 // Called when the game starts or when spawned
@@ -36,19 +34,4 @@ void AMgBlockCubeActor::Tick( float DeltaTime )
 
 }
 
-void AMgBlockCubeActor::SetFalling(bool falling, const FVector location)
-{
-	bIsFalling = falling;
-	BaseLocation = location;
-}
-void AMgBlockCubeActor::SetCoordinate(int x, int y, int z)
-{
-	this->X = x; this->Y = y; this->Z = z;
-	auto vec = FVector(x, y, z) * 100.f + BaseLocation;
-	SetActorLocation(vec);
-}
-void AMgBlockCubeActor::AddCoordinate(int x, int y, int z)
-{
-	SetCoordinate(this->X + x, this->Y + y, this->Z + z);
-}
 
