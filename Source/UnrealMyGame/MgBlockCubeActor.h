@@ -22,11 +22,14 @@ public:
 
 protected:
 	int X, Y, Z;
+	UStaticMeshComponent* Cube;
+	UMaterial* PiledMaterial;
 
 public:
 	int GetX() { return X; }
 	int GetY() { return Y; }
 	int GetZ() { return Z; }
 	void SetCoordinate(int x, int y, int z) { this->X = x; this->Y = y; this->Z = z; }
+	void SetPiled();
 
 };

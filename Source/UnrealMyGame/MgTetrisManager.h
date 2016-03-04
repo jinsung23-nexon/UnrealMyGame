@@ -48,5 +48,8 @@ public:
 	void MoveBlock(int x, int y);
 	void DownBlock();
 	void StopBlock();
+	void RotateX();
+	void RotateY();
+	void RotateZ();
 	
 };

@@ -168,11 +168,48 @@ void AMgTetrisManager::StopBlock()
 		int NewY = Y + Actor->GetY();
 		int NewZ = Z + Actor->GetZ();
 		int Index = GetTetrisIndex(NewX, NewY, NewZ);
+		Actor->SetPiled();
 		PiledCubeArray[Index] = Actor;
 		FallingCubeArray[i] = NULL;
 		UE_LOG(LogTemp, Log, TEXT("StopBlock: PileCube for %d %d %d / %d"), NewX, NewY, NewZ, Index);
 	}
 	FallingCubeNum = 0;
+}
+
+void AMgTetrisManager::RotateX()
+{
+	for (int i = 0; i < FallingCubeNum; i++)
+	{
+		auto Actor = FallingCubeArray[i];
+		int RotX = Actor->GetX();
+		int RotY = Actor->GetZ();
+		int RotZ = -Actor->GetY();
+		int NewX = X + RotX;
+		int NewY = Y + RotY;
+		int NewZ = Z + RotZ;
+		int Index = GetTetrisIndex(NewX, NewY, NewZ);
+		if ((NewX < 0 || NewX >= MapSize) || (NewY < 0 || NewY >= MapSize) || NewZ < 0 || PiledCubeArray[Index] != NULL)
+		{
+			UE_LOG(LogTemp, Log, TEXT("RotateX: Failed by %d %d %d / %d"), NewX, NewY, NewZ, Index);
+			return;
+		}
+	}
+	for (int i = 0; i < FallingCubeNum; i++)
+	{
+		auto Actor = FallingCubeArray[i];
+		int RotX = Actor->GetX();
+		int RotY = Actor->GetZ();
+		int RotZ = -Actor->GetY();
+		Actor->SetCoordinate(RotX, RotY, RotZ); Actor->SetActorLocation(GetCubeLocation(Actor));
+	}
+}
+
+void AMgTetrisManager::RotateY()
+{
+}
+
+void AMgTetrisManager::RotateZ()
+{
 }
 
 

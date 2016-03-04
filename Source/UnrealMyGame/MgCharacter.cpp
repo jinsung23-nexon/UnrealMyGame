@@ -98,6 +98,9 @@ void AMgCharacter::SetupPlayerInputComponent(class UInputComponent* InputCompone
 	InputComponent->BindKey(EKeys::Left, IE_Pressed, this, &AMgCharacter::KeyLeft);
 	InputComponent->BindKey(EKeys::Right, IE_Pressed, this, &AMgCharacter::KeyRight);
 	InputComponent->BindKey(EKeys::SpaceBar, IE_Pressed, this, &AMgCharacter::KeySpace);
+	InputComponent->BindKey(EKeys::Z, IE_Pressed, this, &AMgCharacter::KeyZ);
+	InputComponent->BindKey(EKeys::X, IE_Pressed, this, &AMgCharacter::KeyX);
+	InputComponent->BindKey(EKeys::C, IE_Pressed, this, &AMgCharacter::KeyC);
 	// MyGameCode : ActionMapping
 	InputComponent->BindAction("ZoomIn", IE_Pressed, this, &AMgCharacter::ZoomIn);
 	InputComponent->BindAction("ZoomOut", IE_Pressed, this, &AMgCharacter::ZoomOut);
@@ -116,6 +119,9 @@ void AMgCharacter::KeyDown() { TetrisManager->MoveBlock(-1, 0); }
 void AMgCharacter::KeyLeft() { TetrisManager->MoveBlock(0, -1); }
 void AMgCharacter::KeyRight() { TetrisManager->MoveBlock(0, 1); }
 void AMgCharacter::KeySpace() { }
+void AMgCharacter::KeyZ() { TetrisManager->RotateX(); }
+void AMgCharacter::KeyX() { TetrisManager->RotateY(); }
+void AMgCharacter::KeyC() { TetrisManager->RotateZ(); }
 
 void AMgCharacter::Keyboard1()
 {
