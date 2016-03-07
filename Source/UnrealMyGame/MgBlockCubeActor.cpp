@@ -17,6 +17,7 @@ AMgBlockCubeActor::AMgBlockCubeActor()
 		Cube->SetStaticMesh(MeshAsset.Object);
 		Cube->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));
 		Cube->AttachTo(RootComponent);
+		RootComponent = Cube;
 	}
 
 	static ConstructorHelpers::FObjectFinder<UMaterial> MaterialFinder(

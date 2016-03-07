@@ -22,9 +22,11 @@ AMgTetrisManager::AMgTetrisManager()
 	BlockFallSync = BlockFallPeriod;
 	CameraRotateDegree = 45.f;
 	FallingCubeNum = 0;
+	LevelCubeMax = MapSize * MapSize;
+	LevelCubeNum.Init(0, MapHeight);
 
-    PiledCubeArray.Init(NULL, MapSize*MapSize*MapHeight);
-    FallingCubeArray.Init(NULL, 3); // temp
+	PiledCubeArray.Init(NULL, MapSize*MapHeight*MapHeight);
+    FallingCubeArray.Init(NULL, 10); // temp
 
 	auto MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Floor"));
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> MeshAsset(TEXT("/Game/MobileStarterContent/Architecture/Floor_400x400.Floor_400x400"));
@@ -75,6 +77,11 @@ bool AMgTetrisManager::CheckCubeValid(const FIntVector& vec)
 		&& Index >= 0 && PiledCubeArray[Index] == NULL;
 }
 
+FVector AMgTetrisManager::GetCubeLocation(const FIntVector& vec)
+{
+	return BaseLocation + FVector(vec.X, vec.Y, vec.Z) * CubeLength;
+}
+
 FVector AMgTetrisManager::GetCubeLocation(AMgBlockCubeActor* CubeActor)
 {
 	FIntVector CubeCoord = CurBlockCord + CubeActor->GetCoordinate();
@@ -95,19 +102,22 @@ void AMgTetrisManager::CreateNewBlock()
 		}
 	}
 
-	CurBlockCord.X = 0;
-	CurBlockCord.Y = 0;
+	CurBlockCord.X = MapSize / 2;
+	CurBlockCord.Y = MapSize / 2;
 	CurBlockCord.Z = StartHeight - 1;
 	CurHeight = 0;
 	BlockFallSync = BlockFallPeriod;
-	FallingCubeNum = 3;
 	
 	const FRotator SpawnRotation = GetActorRotation();
 	// temp
 	TArray<FIntVector> CubeCoords;
+	CubeCoords.Add(FIntVector(-2, 0, 0));
+	CubeCoords.Add(FIntVector(-1, 0, 0));
 	CubeCoords.Add(FIntVector(0, 0, 0));
 	CubeCoords.Add(FIntVector(1, 0, 0));
-	CubeCoords.Add(FIntVector(0, 1, 0));
+	CubeCoords.Add(FIntVector(2, 0, 0));
+	FallingCubeNum = CubeCoords.Num();
+
 	for (int i = 0; i < CubeCoords.Num(); i++)
 	{
 		auto CubeActor = World->SpawnActor<AMgBlockCubeActor>(AMgBlockCubeActor::StaticClass(), BaseLocation, SpawnRotation);
@@ -126,10 +136,10 @@ void AMgTetrisManager::MoveBlock(int x, int y)
 	for (int i = 0; i < FallingCubeNum; i++)
 	{
 		auto Actor = FallingCubeArray[i];
-		auto NewCoord = CurBlockCord + Actor->GetCoordinate() + FIntVector(x, y, 0);
-		if (!CheckCubeValid(NewCoord))
+		auto AbsCoord = CurBlockCord + Actor->GetCoordinate() + FIntVector(x, y, 0);
+		if (!CheckCubeValid(AbsCoord))
 		{
-			UE_LOG(LogTemp, Log, TEXT("MoveBlock: Not valid at %d %d %d"), NewCoord.X, NewCoord.Y, NewCoord.Z);
+			UE_LOG(LogTemp, Log, TEXT("MoveBlock: Not valid at %d %d %d"), AbsCoord.X, AbsCoord.Y, AbsCoord.Z);
 			return;
 		}
 	}
@@ -154,10 +164,10 @@ void AMgTetrisManager::DownBlock()
 		for (int i = 0; i < FallingCubeNum; i++)
 		{
 			auto Actor = FallingCubeArray[i];
-			auto NewCoord = CurBlockCord + Actor->GetCoordinate() + FIntVector(0, 0, -1);
-			if (!CheckCubeValid(NewCoord))
+			auto AbsCoord = CurBlockCord + Actor->GetCoordinate() + FIntVector(0, 0, -1);
+			if (!CheckCubeValid(AbsCoord))
 			{
-				UE_LOG(LogTemp, Log, TEXT("StopBlock: Piled at %d %d %d"), NewCoord.X, NewCoord.Y, NewCoord.Z);
+				UE_LOG(LogTemp, Log, TEXT("StopBlock: Piled at %d %d %d"), AbsCoord.X, AbsCoord.Y, AbsCoord.Z);
 				StopBlock();
 				return;
 			}
@@ -176,17 +186,77 @@ void AMgTetrisManager::DownBlock()
 
 void AMgTetrisManager::StopBlock()
 {
+	TArray<int32> ClearLevelArray;
 	for (int i = 0; i < FallingCubeNum; i++)
 	{
 		auto Actor = FallingCubeArray[i];
-		auto NewCoord = CurBlockCord + Actor->GetCoordinate();
-		int Index = GetTetrisIndex(NewCoord);
+		auto AbsCoord = CurBlockCord + Actor->GetCoordinate();
+		int Index = GetTetrisIndex(AbsCoord);
 		Actor->SetPiled();
 		PiledCubeArray[Index] = Actor;
+		LevelCubeNum[AbsCoord.Z]++;
+		if (LevelCubeNum[AbsCoord.Z] >= LevelCubeMax)
+		{
+			ClearLevelArray.Add(AbsCoord.Z);
+		}
+
 		FallingCubeArray[i] = NULL;
-		UE_LOG(LogTemp, Log, TEXT("StopBlock: PileCube at %d %d %d / %d"), NewCoord.X, NewCoord.Y, NewCoord.Z, Index);
+		UE_LOG(LogTemp, Log, TEXT("StopBlock: PileCube at %d %d %d / %d"), AbsCoord.X, AbsCoord.Y, AbsCoord.Z, Index);
 	}
+	
 	FallingCubeNum = 0;
+
+	// Clear level(floor)
+	ClearLevelArray.Sort();
+	int ClearCount = 0;
+	if (ClearLevelArray.Num() > 0)
+	{
+		for (int z = ClearLevelArray[0]; z < MapHeight; z++)
+		{
+			if (ClearLevelArray.Num() > 0 && ClearLevelArray[0] == z)
+			{
+				ClearCount++;
+				LevelCubeNum[z] = 0;
+				for (int x = 0; x < MapSize; x++)
+				{
+					for (int y = 0; y < MapSize; y++)
+					{
+						int Index = GetTetrisIndex(FIntVector(x, y, z));
+						if (PiledCubeArray[Index] != NULL)
+						{
+							PiledCubeArray[Index]->Destroy();
+							PiledCubeArray[Index] = NULL;
+						}
+					}
+				}
+				ClearLevelArray.RemoveAt(0);
+				UE_LOG(LogTemp, Log, TEXT("StopBlock: ClearLevel %d"), z);
+			}
+			else
+			{
+				int MovedCubeNum = 0;
+				for (int x = 0; x < MapSize; x++)
+				{
+					for (int y = 0; y < MapSize; y++)
+					{
+						int Index = GetTetrisIndex(FIntVector(x, y, z));
+						auto Cube = PiledCubeArray[Index];
+						if (Cube != NULL)
+						{
+							auto NewCoord = FIntVector(x, y, z - ClearCount);
+							Cube->SetActorLocation(GetCubeLocation(NewCoord));
+							PiledCubeArray[GetTetrisIndex(NewCoord)] = Cube;
+							PiledCubeArray[Index] = NULL;
+							MovedCubeNum++;
+						}
+					}
+				}
+				LevelCubeNum[z - ClearCount] = MovedCubeNum;
+				UE_LOG(LogTemp, Log, TEXT("StopBlock: level %d -> %d"), z, z-ClearCount);
+			}
+		}
+	}
+
 }
 
 FIntVector RotateAxis(EAxis::Type AxisType, const FIntVector& vec)
@@ -210,11 +280,11 @@ void AMgTetrisManager::RotateBlock(EAxis::Type AxisType)
 	for (int i = 0; i < FallingCubeNum; i++)
 	{
 		auto Actor = FallingCubeArray[i];
-		auto NewCoord = CurBlockCord + RotateAxis(AxisType, Actor->GetCoordinate());
-		int Index = GetTetrisIndex(NewCoord);
-		if (!CheckCubeValid(NewCoord))
+		auto AbsCoord = CurBlockCord + RotateAxis(AxisType, Actor->GetCoordinate());
+		int Index = GetTetrisIndex(AbsCoord);
+		if (!CheckCubeValid(AbsCoord))
 		{
-			UE_LOG(LogTemp, Log, TEXT("RotateBlock: Failed at %d %d %d / %d"), NewCoord.X, NewCoord.Y, NewCoord.Z, Index);
+			UE_LOG(LogTemp, Log, TEXT("RotateBlock: Failed at %d %d %d / %d"), AbsCoord.X, AbsCoord.Y, AbsCoord.Z, Index);
 			return;
 		}
 	}

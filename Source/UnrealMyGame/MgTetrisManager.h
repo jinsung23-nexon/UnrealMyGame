@@ -41,6 +41,8 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float CameraRotateDegree;
 	int8 FallingCubeNum;
+	int8 LevelCubeMax;
+	TArray<int8> LevelCubeNum;
 
 	FVector BaseLocation;
 	FIntVector CurBlockCord;
@@ -54,6 +56,7 @@ protected:
 public:
 	int GetTetrisIndex(const FIntVector& vec);
 	bool CheckCubeValid(const FIntVector& vec);
+	FVector GetCubeLocation(const FIntVector& vec);
 	FVector GetCubeLocation(AMgBlockCubeActor* CubeActor);
 	void CreateNewBlock();
 	void MoveBlock(int32 x, int32 y);
