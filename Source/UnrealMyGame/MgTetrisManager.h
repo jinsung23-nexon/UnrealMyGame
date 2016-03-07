@@ -30,9 +30,16 @@ protected:
     int8 MapHeight;
 	UPROPERTY(VisibleAnywhere)
 	int8 CurHeight;
+
+	float MapLength;
+	float CubeLength;
+	float CubeScale;
+
 	UPROPERTY(EditAnywhere)
 	float BlockFallPeriod;
 	float BlockFallSync;
+	UPROPERTY(EditAnywhere)
+	float CameraRotateDegree;
 	int8 FallingCubeNum;
 
 	FVector BaseLocation;
@@ -41,16 +48,20 @@ protected:
     TArray<AMgBlockCubeActor*> PiledCubeArray;
     TArray<AMgBlockCubeActor*> FallingCubeArray;
 
+	UPROPERTY(VisibleAnywhere)
+	UCameraComponent* TetrisCamera;
+
 public:
 	int GetTetrisIndex(const FIntVector& vec);
 	bool CheckCubeValid(const FIntVector& vec);
 	FVector GetCubeLocation(AMgBlockCubeActor* CubeActor);
 	void CreateNewBlock();
-	void MoveBlock(int x, int y);
+	void MoveBlock(int32 x, int32 y);
 	void DownBlock();
 	void StopBlock();
-	void RotateX();
-	void RotateY();
-	void RotateZ();
+	void RotateBlock(EAxis::Type AxisType);
+
+	void InitCamera();
+	void RotateCamera(bool bIsCcw);
 	
 };

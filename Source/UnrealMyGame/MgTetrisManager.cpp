@@ -10,11 +10,17 @@ AMgTetrisManager::AMgTetrisManager()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-    MapSize = 5;
+	MapSize = 5;
 	StartHeight = 7;
 	MapHeight = StartHeight + 2;
+
+	MapLength = 400.f * 2.5f;
+	CubeLength = MapLength / MapSize;
+	CubeScale = CubeLength / 100.f;
+
 	BlockFallPeriod = 1.f;
 	BlockFallSync = BlockFallPeriod;
+	CameraRotateDegree = 45.f;
 	FallingCubeNum = 0;
 
     PiledCubeArray.Init(NULL, MapSize*MapSize*MapHeight);
@@ -28,6 +34,9 @@ AMgTetrisManager::AMgTetrisManager()
 		MeshComp->SetWorldScale3D(FVector(2.5f, 2.5f, 1.5f));
 		RootComponent = MeshComp;
 	}
+
+	TetrisCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
+	TetrisCamera->AttachTo(RootComponent);
 }
 
 // Called when the game starts or when spawned
@@ -35,7 +44,7 @@ void AMgTetrisManager::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	BaseLocation = GetActorLocation() + FVector(50.f, 50.f, 20.f);
+	BaseLocation = GetActorLocation() + FVector(100.f/2, 100.f/2, 100.f * 0.025f) * CubeScale;
 }
 
 // Called every frame
@@ -69,7 +78,7 @@ bool AMgTetrisManager::CheckCubeValid(const FIntVector& vec)
 FVector AMgTetrisManager::GetCubeLocation(AMgBlockCubeActor* CubeActor)
 {
 	FIntVector CubeCoord = CurBlockCord + CubeActor->GetCoordinate();
-	return BaseLocation + FVector(CubeCoord.X, CubeCoord.Y, CubeCoord.Z) * 110.f;
+	return BaseLocation + FVector(CubeCoord.X, CubeCoord.Y, CubeCoord.Z) * CubeLength;
 }
 
 void AMgTetrisManager::CreateNewBlock()
@@ -102,6 +111,7 @@ void AMgTetrisManager::CreateNewBlock()
 	for (int i = 0; i < CubeCoords.Num(); i++)
 	{
 		auto CubeActor = World->SpawnActor<AMgBlockCubeActor>(AMgBlockCubeActor::StaticClass(), BaseLocation, SpawnRotation);
+		CubeActor->SetActorScale3D(FVector(CubeScale * 0.95f, CubeScale * 0.95f, CubeScale * 0.95f));
 		CubeActor->SetCoordinate(CubeCoords[i]);
 		CubeActor->SetActorLocation(GetCubeLocation(CubeActor));
 		FallingCubeArray[i] = CubeActor;
@@ -174,40 +184,68 @@ void AMgTetrisManager::StopBlock()
 		Actor->SetPiled();
 		PiledCubeArray[Index] = Actor;
 		FallingCubeArray[i] = NULL;
-		UE_LOG(LogTemp, Log, TEXT("StopBlock: PileCube for %d %d %d / %d"), NewCoord.X, NewCoord.Y, NewCoord.Z, Index);
+		UE_LOG(LogTemp, Log, TEXT("StopBlock: PileCube at %d %d %d / %d"), NewCoord.X, NewCoord.Y, NewCoord.Z, Index);
 	}
 	FallingCubeNum = 0;
 }
 
-void AMgTetrisManager::RotateX()
+FIntVector RotateAxis(EAxis::Type AxisType, const FIntVector& vec)
+{
+	switch (AxisType)
+	{
+	case EAxis::Type::X:
+		return FIntVector(vec.X, vec.Z, -vec.Y);
+	case EAxis::Type::Y:
+		return FIntVector(vec.Z, vec.Y, -vec.X);
+	case EAxis::Type::Z:
+		return FIntVector(-vec.Y, vec.X, vec.Z);
+	default:
+		check(false);
+		return FIntVector(0, 0, 0);
+	}
+}
+
+void AMgTetrisManager::RotateBlock(EAxis::Type AxisType)
 {
 	for (int i = 0; i < FallingCubeNum; i++)
 	{
 		auto Actor = FallingCubeArray[i];
-		auto CubeCoord = Actor->GetCoordinate();
-		auto NewCoord = CurBlockCord + FIntVector(CubeCoord.X, CubeCoord.Z, -CubeCoord.Y);
+		auto NewCoord = CurBlockCord + RotateAxis(AxisType, Actor->GetCoordinate());
 		int Index = GetTetrisIndex(NewCoord);
 		if (!CheckCubeValid(NewCoord))
 		{
-			UE_LOG(LogTemp, Log, TEXT("RotateX: Failed by %d %d %d / %d"), NewCoord.X, NewCoord.Y, NewCoord.Z, Index);
+			UE_LOG(LogTemp, Log, TEXT("RotateBlock: Failed at %d %d %d / %d"), NewCoord.X, NewCoord.Y, NewCoord.Z, Index);
 			return;
 		}
 	}
 	for (int i = 0; i < FallingCubeNum; i++)
 	{
 		auto Actor = FallingCubeArray[i];
-		auto CubeCoord = Actor->GetCoordinate();
-		Actor->SetCoordinate(FIntVector(CubeCoord.X, CubeCoord.Z, -CubeCoord.Y));
+		Actor->SetCoordinate(RotateAxis(AxisType, Actor->GetCoordinate()));
 		Actor->SetActorLocation(GetCubeLocation(Actor));
 	}
 }
 
-void AMgTetrisManager::RotateY()
+void AMgTetrisManager::InitCamera()
 {
+	TetrisCamera->SetRelativeLocationAndRotation(FVector(-300.f, 200.f, 1000.f), FRotator(-50.f, 0.f, 0.f));
+	auto OurPlayerController = UGameplayStatics::GetPlayerController(this, 0);
+	OurPlayerController->SetViewTargetWithBlend(this, 0.5f);
 }
 
-void AMgTetrisManager::RotateZ()
+void AMgTetrisManager::RotateCamera(bool bIsCcw)
 {
+	auto CurTrans = TetrisCamera->GetRelativeTransform();
+	auto CurLoc = CurTrans.GetLocation();
+	auto CurRot = TetrisCamera->GetComponentRotation();
+	
+	float RotateRad = PI / 180.f * CameraRotateDegree;
+	FVector2D MidPoint = FVector2D(200, 200);
+	FVector2D XY1 = FVector2D(CurLoc.X, CurLoc.Y) - MidPoint;
+	FVector2D XY2 = FVector2D(XY1.X * cos(RotateRad) - XY1.Y * sin(RotateRad),
+							  XY1.X * sin(RotateRad) + XY1.Y * cos(RotateRad));
+	FVector2D NewXY = MidPoint + XY2;
+
+	TetrisCamera->SetRelativeLocation(FVector(NewXY.X, NewXY.Y, CurLoc.Z));
+	TetrisCamera->SetRelativeRotation(CurRot + FRotator(0, CameraRotateDegree, 0.f));
 }
-
-

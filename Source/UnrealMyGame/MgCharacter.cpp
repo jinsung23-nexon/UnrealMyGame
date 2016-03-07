@@ -101,6 +101,8 @@ void AMgCharacter::SetupPlayerInputComponent(class UInputComponent* InputCompone
 	InputComponent->BindKey(EKeys::Z, IE_Pressed, this, &AMgCharacter::KeyZ);
 	InputComponent->BindKey(EKeys::X, IE_Pressed, this, &AMgCharacter::KeyX);
 	InputComponent->BindKey(EKeys::C, IE_Pressed, this, &AMgCharacter::KeyC);
+	InputComponent->BindKey(EKeys::Q, IE_Pressed, this, &AMgCharacter::KeyQ);
+	InputComponent->BindKey(EKeys::E, IE_Pressed, this, &AMgCharacter::KeyE);
 	// MyGameCode : ActionMapping
 	InputComponent->BindAction("ZoomIn", IE_Pressed, this, &AMgCharacter::ZoomIn);
 	InputComponent->BindAction("ZoomOut", IE_Pressed, this, &AMgCharacter::ZoomOut);
@@ -119,9 +121,11 @@ void AMgCharacter::KeyDown() { TetrisManager->MoveBlock(-1, 0); }
 void AMgCharacter::KeyLeft() { TetrisManager->MoveBlock(0, -1); }
 void AMgCharacter::KeyRight() { TetrisManager->MoveBlock(0, 1); }
 void AMgCharacter::KeySpace() { }
-void AMgCharacter::KeyZ() { TetrisManager->RotateX(); }
-void AMgCharacter::KeyX() { TetrisManager->RotateY(); }
-void AMgCharacter::KeyC() { TetrisManager->RotateZ(); }
+void AMgCharacter::KeyZ() { TetrisManager->RotateBlock(EAxis::X); }
+void AMgCharacter::KeyX() { TetrisManager->RotateBlock(EAxis::Y); }
+void AMgCharacter::KeyC() { TetrisManager->RotateBlock(EAxis::Z); }
+void AMgCharacter::KeyQ() { TetrisManager->RotateCamera(false); }
+void AMgCharacter::KeyE() { TetrisManager->RotateCamera(false); }
 
 void AMgCharacter::Keyboard1()
 {
@@ -143,5 +147,6 @@ void AMgCharacter::Keyboard2()
 }
 void AMgCharacter::Keyboard3()
 {
+	TetrisManager->InitCamera();
 }
 

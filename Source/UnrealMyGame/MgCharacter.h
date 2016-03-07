@@ -47,6 +47,8 @@ protected:
 	void KeyZ();
 	void KeyX();
 	void KeyC();
+	void KeyQ();
+	void KeyE();
 	void ZoomIn() { bZoomingIn = true; }
 	void ZoomOut() { bZoomingIn = false; }
 	void Keyboard1();
