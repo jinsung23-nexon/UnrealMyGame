@@ -21,15 +21,13 @@ public:
 	virtual void Tick( float DeltaSeconds ) override;
 
 protected:
-	int X, Y, Z;
+	FIntVector Coordinate;
 	UStaticMeshComponent* Cube;
 	UMaterial* PiledMaterial;
 
 public:
-	int GetX() { return X; }
-	int GetY() { return Y; }
-	int GetZ() { return Z; }
-	void SetCoordinate(int x, int y, int z) { this->X = x; this->Y = y; this->Z = z; }
+	const FIntVector& GetCoordinate() { return Coordinate; }
+	void SetCoordinate(const FIntVector& coord) { Coordinate = coord; }
 	void SetPiled();
 
 };

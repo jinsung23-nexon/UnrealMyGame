@@ -34,15 +34,16 @@ protected:
 	float BlockFallPeriod;
 	float BlockFallSync;
 	int8 FallingCubeNum;
-	FVector BaseLocation;
 
-	int X, Y, Z;
+	FVector BaseLocation;
+	FIntVector CurBlockCord;
 
     TArray<AMgBlockCubeActor*> PiledCubeArray;
     TArray<AMgBlockCubeActor*> FallingCubeArray;
 
 public:
-	int GetTetrisIndex(int x, int y, int z);
+	int GetTetrisIndex(const FIntVector& vec);
+	bool CheckCubeValid(const FIntVector& vec);
 	FVector GetCubeLocation(AMgBlockCubeActor* CubeActor);
 	void CreateNewBlock();
 	void MoveBlock(int x, int y);
