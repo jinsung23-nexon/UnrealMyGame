@@ -47,6 +47,7 @@ protected:
 	FVector BaseLocation;
 	FIntVector CurBlockCord;
 
+	TArray<TArray<FIntVector>> BlockShpaeArray;
     TArray<AMgBlockCubeActor*> PiledCubeArray;
     TArray<AMgBlockCubeActor*> FallingCubeArray;
 
@@ -54,6 +55,7 @@ protected:
 	UCameraComponent* TetrisCamera;
 
 public:
+	void LoadBlockData();
 	int GetTetrisIndex(const FIntVector& vec);
 	bool CheckCubeValid(const FIntVector& vec);
 	FVector GetCubeLocation(const FIntVector& vec);

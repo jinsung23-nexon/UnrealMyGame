@@ -3,6 +3,7 @@
 #include "UnrealMyGame.h"
 #include "MgTetrisManager.h"
 #include "MgBlockCubeActor.h"
+#include "Json.h"
 
 // Sets default values
 AMgTetrisManager::AMgTetrisManager()
@@ -12,7 +13,7 @@ AMgTetrisManager::AMgTetrisManager()
 
 	MapSize = 5;
 	StartHeight = 7;
-	MapHeight = StartHeight + 2;
+	MapHeight = StartHeight + MapSize / 2; // for Rotate Z
 
 	MapLength = 400.f * 2.5f;
 	CubeLength = MapLength / MapSize;
@@ -39,6 +40,8 @@ AMgTetrisManager::AMgTetrisManager()
 
 	TetrisCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	TetrisCamera->AttachTo(RootComponent);
+
+	LoadBlockData();
 }
 
 // Called when the game starts or when spawned
@@ -63,6 +66,32 @@ void AMgTetrisManager::Tick( float DeltaTime )
 		}
 	}
 
+}
+
+void AMgTetrisManager::LoadBlockData()
+{
+	BlockShpaeArray.Empty();
+	FString JsonPath = FPaths::GameDir() + "/Content/Data/BlockData.json";
+	FString JsonRaw = "";
+	FFileHelper::LoadFileToString(JsonRaw, *JsonPath);
+	TSharedPtr<FJsonObject> JsonParsed;
+	TSharedRef<TJsonReader<TCHAR>> JsonReader = TJsonReaderFactory<TCHAR>::Create(JsonRaw);
+	if (FJsonSerializer::Deserialize(JsonReader, JsonParsed))
+	{
+		for (auto BlockVal : JsonParsed->GetArrayField("ShapeArray"))
+		{
+			auto CubeJsonArray = BlockVal->AsArray();
+			TArray<FIntVector> CubeArray;
+			for (auto CubeVal : CubeJsonArray)
+			{
+				auto VecArray = CubeVal->AsArray();
+				check(VecArray.Num() == 3);
+				CubeArray.Add(FIntVector(VecArray[0]->AsNumber(), VecArray[1]->AsNumber(), VecArray[2]->AsNumber()));
+			}
+			BlockShpaeArray.Add(CubeArray);
+		}
+	}
+	check(BlockShpaeArray.Num() > 0);
 }
 
 int AMgTetrisManager::GetTetrisIndex(const FIntVector& vec)
@@ -109,15 +138,8 @@ void AMgTetrisManager::CreateNewBlock()
 	BlockFallSync = BlockFallPeriod;
 	
 	const FRotator SpawnRotation = GetActorRotation();
-	// temp
-	TArray<FIntVector> CubeCoords;
-	CubeCoords.Add(FIntVector(-2, 0, 0));
-	CubeCoords.Add(FIntVector(-1, 0, 0));
-	CubeCoords.Add(FIntVector(0, 0, 0));
-	CubeCoords.Add(FIntVector(1, 0, 0));
-	CubeCoords.Add(FIntVector(2, 0, 0));
+	TArray<FIntVector> CubeCoords = BlockShpaeArray[FMath::RandRange(0, BlockShpaeArray.Num()-1)];
 	FallingCubeNum = CubeCoords.Num();
-
 	for (int i = 0; i < CubeCoords.Num(); i++)
 	{
 		auto CubeActor = World->SpawnActor<AMgBlockCubeActor>(AMgBlockCubeActor::StaticClass(), BaseLocation, SpawnRotation);
@@ -125,8 +147,12 @@ void AMgTetrisManager::CreateNewBlock()
 		CubeActor->SetCoordinate(CubeCoords[i]);
 		CubeActor->SetActorLocation(GetCubeLocation(CubeActor));
 		FallingCubeArray[i] = CubeActor;
-
 	}
+
+	// rotate properly
+	for (int i = 0; i < FMath::RandRange(0, 3); i++)
+		RotateBlock(EAxis::Type(FMath::RandRange(1, 3)));
+
 	UE_LOG(LogTemp, Log, TEXT("CreateNewCubeBlock: End"));
 }
 
