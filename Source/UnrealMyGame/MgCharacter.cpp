@@ -120,7 +120,7 @@ void AMgCharacter::KeyUp() { TetrisManager->MoveBlock(1, 0); }
 void AMgCharacter::KeyDown() { TetrisManager->MoveBlock(-1, 0); }
 void AMgCharacter::KeyLeft() { TetrisManager->MoveBlock(0, -1); }
 void AMgCharacter::KeyRight() { TetrisManager->MoveBlock(0, 1); }
-void AMgCharacter::KeySpace() { }
+void AMgCharacter::KeySpace() { TetrisManager->DropBlock(); }
 void AMgCharacter::KeyZ() { TetrisManager->RotateBlock(EAxis::X); }
 void AMgCharacter::KeyX() { TetrisManager->RotateBlock(EAxis::Y); }
 void AMgCharacter::KeyC() { TetrisManager->RotateBlock(EAxis::Z); }

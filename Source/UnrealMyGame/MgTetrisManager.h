@@ -40,17 +40,20 @@ protected:
 	float BlockFallSync;
 	UPROPERTY(EditAnywhere)
 	float CameraRotateDegree;
-	int8 FallingCubeNum;
+	int8 BlockCubeMax;
+	int8 BlockCubeNum;
 	int8 LevelCubeMax;
 	TArray<int8> LevelCubeNum;
 
 	FVector BaseLocation;
 	FIntVector CurBlockCord;
+	FIntVector PredictBlockCord;
 	FVector2D CameraInput;
 
 	TArray<TArray<FIntVector>> BlockShpaeArray;
     TArray<AMgBlockCubeActor*> PiledCubeArray;
     TArray<AMgBlockCubeActor*> FallingCubeArray;
+	TArray<AMgBlockCubeActor*> PredictCubeArray;
 
 	UPROPERTY(VisibleAnywhere)
 	UCameraComponent* TetrisCamera;
@@ -66,7 +69,9 @@ public:
 	void MoveBlock(int32 x, int32 y);
 	void DownBlock();
 	void StopBlock();
+	void DropBlock();
 	void RotateBlock(EAxis::Type AxisType);
+	void PredictBlock();
 
 	void InitCamera();
 	void RotateCamera(bool bIsCcw);

@@ -20,9 +20,15 @@ AMgBlockCubeActor::AMgBlockCubeActor()
 		RootComponent = Cube;
 	}
 
-	static ConstructorHelpers::FObjectFinder<UMaterial> MaterialFinder(
-		TEXT("/Game/MobileStarterContent/Materials/M_Metal_Steel.M_Metal_Steel"));
-	PiledMaterial = MaterialFinder.Object;
+	static ConstructorHelpers::FObjectFinder<UMaterial> FallingMatFinder(
+		TEXT("/Game/MobileStarterContent/Materials/M_Basic_Wall.M_Basic_Wall"));
+	FallingMaterial = FallingMatFinder.Object;
+	static ConstructorHelpers::FObjectFinder<UMaterial> PredictMatFinder(
+		TEXT("/Game/MobileStarterContent/Materials/M_Glass.M_Glass"));
+	PredictMaterial = PredictMatFinder.Object;
+	static ConstructorHelpers::FObjectFinder<UMaterial> PiledMatFinder(
+		TEXT("/Game/MobileStarterContent/Materials/M_Rock_Slate.M_Rock_Slate"));
+	PiledMaterial = PiledMatFinder.Object;
 }
 
 // Called when the game starts or when spawned
@@ -39,9 +45,27 @@ void AMgBlockCubeActor::Tick( float DeltaTime )
 
 }
 
-void AMgBlockCubeActor::SetPiled()
+void AMgBlockCubeActor::SetState(EBlockCube NewState)
 {
-	auto DynamicMaterial = UMaterialInstanceDynamic::Create(PiledMaterial, this);
+	State = NewState;
+	UMaterial* NewMaterial = NULL;
+	switch (State)
+	{
+	case EBlockCube::BC_Falling:
+		NewMaterial = FallingMaterial;
+		break;
+	case EBlockCube::BC_Predict:
+		NewMaterial = PredictMaterial;
+		break;
+	case EBlockCube::BC_Piled:
+		NewMaterial = PiledMaterial;
+		break;
+	default:
+		check(false);
+		break;
+	}
+
+	auto DynamicMaterial = UMaterialInstanceDynamic::Create(NewMaterial, this);
 	Cube->SetMaterial(0, DynamicMaterial);
 }
 

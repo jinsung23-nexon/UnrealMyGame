@@ -20,14 +20,31 @@ public:
 	// Called every frame
 	virtual void Tick( float DeltaSeconds ) override;
 
+public:
+	UENUM()
+	enum class EBlockCube : uint8
+	{
+		BC_Falling,
+		BC_Predict,
+		BC_Piled
+	};
+
 protected:
+	EBlockCube State;
 	FIntVector Coordinate;
 	UStaticMeshComponent* Cube;
+
+	UPROPERTY(EditAnywhere, Category = "Material")
+	UMaterial* FallingMaterial;
+	UPROPERTY(EditAnywhere, Category = "Material")
+	UMaterial* PredictMaterial;
+	UPROPERTY(EditAnywhere, Category = "Material")
 	UMaterial* PiledMaterial;
 
 public:
+	EBlockCube GetState() { return State; }
 	const FIntVector& GetCoordinate() { return Coordinate; }
+	void SetState(EBlockCube NewState);
 	void SetCoordinate(const FIntVector& coord) { Coordinate = coord; }
-	void SetPiled();
 
 };
