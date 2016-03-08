@@ -23,13 +23,13 @@ public:
 	virtual void Tick( float DeltaSeconds ) override;
 
 protected:
+	bool bIsInitialized;
+
     UPROPERTY(EditAnywhere)
     int8 MapSize;
 	UPROPERTY(EditAnywhere)
 	int8 StartHeight;
     int8 MapHeight;
-	UPROPERTY(VisibleAnywhere)
-	int8 CurHeight;
 
 	float MapLength;
 	float CubeLength;
@@ -46,6 +46,7 @@ protected:
 
 	FVector BaseLocation;
 	FIntVector CurBlockCord;
+	FVector2D CameraInput;
 
 	TArray<TArray<FIntVector>> BlockShpaeArray;
     TArray<AMgBlockCubeActor*> PiledCubeArray;
@@ -56,6 +57,7 @@ protected:
 
 public:
 	void LoadBlockData();
+	void InitGame();
 	int GetTetrisIndex(const FIntVector& vec);
 	bool CheckCubeValid(const FIntVector& vec);
 	FVector GetCubeLocation(const FIntVector& vec);
@@ -68,5 +70,8 @@ public:
 
 	void InitCamera();
 	void RotateCamera(bool bIsCcw);
+
+	void YawCamera(float AxisValue) { CameraInput.X = FMath::Clamp<float>(AxisValue, -1.0f, 1.0f); }
+	void PitchCamera(float AxisValue) { CameraInput.Y = FMath::Clamp<float>(AxisValue, -1.0f, 1.0f); }
 	
 };

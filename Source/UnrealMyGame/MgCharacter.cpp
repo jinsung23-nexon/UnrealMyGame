@@ -129,14 +129,7 @@ void AMgCharacter::KeyE() { TetrisManager->RotateCamera(false); }
 
 void AMgCharacter::Keyboard1()
 {
-	// Create Block Test
-	const FRotator SpawnRotation = GetControlRotation();
-	const FVector SpawnLocation = GetActorLocation() + SpawnRotation.RotateVector(FVector(500.f, 0.f, 100.f));
-	UWorld* const World = GetWorld();
-	if (World != NULL)
-	{
-		World->SpawnActor<AMgBlockCubeActor>(AMgBlockCubeActor::StaticClass(), SpawnLocation, SpawnRotation);
-	}
+	TetrisManager->InitGame();
 }
 void AMgCharacter::Keyboard2()
 {

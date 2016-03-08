@@ -11,6 +11,8 @@ AMgTetrisManager::AMgTetrisManager()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	bIsInitialized = false;
+
 	MapSize = 5;
 	StartHeight = 7;
 	MapHeight = StartHeight + MapSize / 2; // for Rotate Z
@@ -20,11 +22,7 @@ AMgTetrisManager::AMgTetrisManager()
 	CubeScale = CubeLength / 100.f;
 
 	BlockFallPeriod = 1.f;
-	BlockFallSync = BlockFallPeriod;
 	CameraRotateDegree = 45.f;
-	FallingCubeNum = 0;
-	LevelCubeMax = MapSize * MapSize;
-	LevelCubeNum.Init(0, MapHeight);
 
 	PiledCubeArray.Init(NULL, MapSize*MapHeight*MapHeight);
     FallingCubeArray.Init(NULL, 10); // temp
@@ -40,16 +38,13 @@ AMgTetrisManager::AMgTetrisManager()
 
 	TetrisCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	TetrisCamera->AttachTo(RootComponent);
-
-	LoadBlockData();
 }
 
 // Called when the game starts or when spawned
 void AMgTetrisManager::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	BaseLocation = GetActorLocation() + FVector(100.f/2, 100.f/2, 100.f * 0.025f) * CubeScale;
+
 }
 
 // Called every frame
@@ -66,6 +61,44 @@ void AMgTetrisManager::Tick( float DeltaTime )
 		}
 	}
 
+	if (!CameraInput.IsZero())
+	{
+		TetrisCamera->AddRelativeRotation(FRotator(CameraInput.Y * DeltaTime * 50.f, CameraInput.X * DeltaTime * 40.f, 0));
+	}
+}
+
+
+void AMgTetrisManager::InitGame()
+{
+	if (!bIsInitialized)
+	{
+		/*auto Input = UGameplayStatics::GetPlayerController(this, 0)->InputComponent;
+		Input->BindAxisKey(EKeys::MouseX, this, &AMgTetrisManager::YawCamera);
+		Input->BindAxisKey(EKeys::MouseY, this, &AMgTetrisManager::PitchCamera);*/
+		bIsInitialized = true;
+	}
+
+	BaseLocation = GetActorLocation() + FVector(100.f / 2, 100.f / 2, 100.f * 0.025f) * CubeScale;
+
+	BlockFallSync = BlockFallPeriod;
+	FallingCubeNum = 0;
+	LevelCubeMax = MapSize * MapSize;
+
+	LevelCubeNum.Init(0, MapHeight);
+	for (auto Actor : FallingCubeArray)
+	{
+		if (Actor != NULL)
+			Actor->Destroy();
+	}
+	for (auto Actor : PiledCubeArray)
+	{
+		if (Actor != NULL)
+			Actor->Destroy();
+	}
+
+	LoadBlockData();
+	InitCamera();
+	CreateNewBlock();
 }
 
 void AMgTetrisManager::LoadBlockData()
@@ -119,22 +152,19 @@ FVector AMgTetrisManager::GetCubeLocation(AMgBlockCubeActor* CubeActor)
 
 void AMgTetrisManager::CreateNewBlock()
 {
+	if (!bIsInitialized) return;
 	UWorld* const World = GetWorld();
 	if (World == NULL) return;
 
-	for (auto actor : FallingCubeArray)
+	for (auto Actor : FallingCubeArray)
 	{
-		if (actor != NULL)
-		{
-			UE_LOG(LogTemp, Log, TEXT("CreateNewCubeBlock: Destroy"));
-			actor->Destroy();
-		}
+		if (Actor != NULL)
+			Actor->Destroy();
 	}
 
 	CurBlockCord.X = MapSize / 2;
 	CurBlockCord.Y = MapSize / 2;
 	CurBlockCord.Z = StartHeight - 1;
-	CurHeight = 0;
 	BlockFallSync = BlockFallPeriod;
 	
 	const FRotator SpawnRotation = GetActorRotation();
