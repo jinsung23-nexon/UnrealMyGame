@@ -5,6 +5,7 @@
 #include "GameFramework/Actor.h"
 #include "MgTetrisManager.generated.h"
 
+class AMgTetrisHUD;
 class AMgBlockCubeActor;
 
 UCLASS()
@@ -57,6 +58,8 @@ protected:
 
 	UPROPERTY(VisibleAnywhere)
 	UCameraComponent* TetrisCamera;
+
+	AMgTetrisHUD* TetrisHUD;
 
 public:
 	void LoadBlockData();

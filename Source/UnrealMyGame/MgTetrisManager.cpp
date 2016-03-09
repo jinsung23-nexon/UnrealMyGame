@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "UnrealMyGame.h"
+#include "MgTetrisHUD.h"
 #include "MgTetrisManager.h"
 #include "MgBlockCubeActor.h"
 #include "Json.h"
@@ -44,6 +45,7 @@ void AMgTetrisManager::BeginPlay()
 {
 	Super::BeginPlay();
 
+	TetrisHUD = Cast<AMgTetrisHUD>(UGameplayStatics::GetPlayerController(this, 0)->GetHUD());
 }
 
 // Called every frame
@@ -274,6 +276,7 @@ void AMgTetrisManager::StopBlock()
 				}
 				ClearLevelArray.RemoveAt(0);
 				ClearCount++;
+				TetrisHUD->SetClearCubeNum(TetrisHUD->GetClearCubeNum() + LevelCubeNum[z]);
 				LevelCubeNum[z] = 0;
 				UE_LOG(LogTemp, Log, TEXT("StopBlock: ClearLevel %d"), z);
 			}
