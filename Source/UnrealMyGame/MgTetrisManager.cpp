@@ -14,7 +14,7 @@ AMgTetrisManager::AMgTetrisManager()
 	bIsInitialized = false;
 
 	MapSize = 5;
-	StartHeight = 7;
+	StartHeight = 10;
 	MapHeight = StartHeight + MapSize / 2; // for Rotate Z
 
 	MapLength = 400.f * 2.5f;
@@ -54,7 +54,7 @@ void AMgTetrisManager::Tick( float DeltaTime )
 	if (BlockCubeNum > 0)
 	{
 		BlockFallSync -= DeltaTime;
-		if (BlockFallSync < 0)
+		if (BlockFallSync <= 0)
 		{
 			DownBlock();
 		}
@@ -99,9 +99,11 @@ void AMgTetrisManager::InitGame()
 	InitCubeArray(FallingCubeArray);
 	InitCubeArray(PredictCubeArray);
 	LoadBlockData();
+	FallingCubeArray.Init(NULL, BlockCubeMax);
+	PredictCubeArray.Init(NULL, BlockCubeMax);
 
 	InitCamera();
-	CreateNewBlock();
+	CreateBlock();
 }
 
 void AMgTetrisManager::LoadBlockData()
@@ -134,14 +136,14 @@ void AMgTetrisManager::LoadBlockData()
 	check(BlockShpaeArray.Num() > 0);
 }
 
-int AMgTetrisManager::GetTetrisIndex(const FIntVector& vec)
+int AMgTetrisManager::GetCubeIndex(const FIntVector& vec)
 {
 	return MapSize*MapHeight * vec.X + MapHeight * vec.Y + vec.Z;
 }
 
 bool AMgTetrisManager::CheckCubeValid(const FIntVector& vec)
 {
-	int Index = GetTetrisIndex(vec);
+	int Index = GetCubeIndex(vec);
 	return vec.X >= 0 && vec.X < MapSize && vec.Y >= 0 && vec.Y < MapSize && vec.Z >= 0
 		&& Index >= 0 && PiledCubeArray[Index] == NULL;
 }
@@ -153,11 +155,11 @@ FVector AMgTetrisManager::GetCubeLocation(const FIntVector& vec)
 
 FVector AMgTetrisManager::GetCubeLocation(AMgBlockCubeActor* CubeActor)
 {
-	FIntVector CubeCoord = CurBlockCord + CubeActor->GetCoordinate();
-	return BaseLocation + FVector(CubeCoord.X, CubeCoord.Y, CubeCoord.Z) * CubeLength;
+	FIntVector CubeCoord = FallingBlockCord + CubeActor->GetCoordinate();
+	return GetCubeLocation(CubeCoord);
 }
 
-void AMgTetrisManager::CreateNewBlock()
+void AMgTetrisManager::CreateBlock()
 {
 	if (!bIsInitialized) return;
 	UWorld* const World = GetWorld();
@@ -165,31 +167,29 @@ void AMgTetrisManager::CreateNewBlock()
 
 	InitCubeArray(FallingCubeArray);
 	InitCubeArray(PredictCubeArray);
-	FallingCubeArray.Init(NULL, BlockCubeMax);
-	PredictCubeArray.Init(NULL, BlockCubeMax);
 
-	CurBlockCord = FIntVector(MapSize / 2, MapSize / 2, StartHeight - 1);
-	PredictBlockCord = CurBlockCord;
+	FallingBlockCord = FIntVector(MapSize / 2, MapSize / 2, StartHeight - 1);
+	PredictBlockCord = FallingBlockCord;
 	BlockFallSync = BlockFallPeriod;
 	
-	const FRotator SpawnRotation = GetActorRotation();
+	const FRotator SpawnRotation = FRotator::ZeroRotator;
 	TArray<FIntVector> CubeCoords = BlockShpaeArray[FMath::RandRange(0, BlockShpaeArray.Num()-1)];
 	BlockCubeNum = CubeCoords.Num();
 	for (int i = 0; i < CubeCoords.Num(); i++)
 	{
-		auto CubeActor = World->SpawnActor<AMgBlockCubeActor>(AMgBlockCubeActor::StaticClass(), BaseLocation, SpawnRotation);
-		CubeActor->SetState(AMgBlockCubeActor::EBlockCube::BC_Falling);
-		CubeActor->SetCoordinate(CubeCoords[i]);
-		CubeActor->SetActorScale3D(FVector(CubeScale * 0.95f, CubeScale * 0.95f, CubeScale * 0.95f));
-		CubeActor->SetActorLocation(GetCubeLocation(CubeActor));
-		FallingCubeArray[i] = CubeActor;
+		auto FallingCube = World->SpawnActor<AMgBlockCubeActor>(AMgBlockCubeActor::StaticClass(), BaseLocation, SpawnRotation);
+		FallingCube->SetState(AMgBlockCubeActor::EBlockCube::BC_Falling);
+		FallingCube->SetCoordinate(CubeCoords[i]);
+		FallingCube->SetActorScale3D(FVector(CubeScale * 0.95f, CubeScale * 0.95f, CubeScale * 0.95f));
+		FallingCube->SetActorLocation(GetCubeLocation(FallingCube));
+		FallingCubeArray[i] = FallingCube;
 
-		CubeActor = World->SpawnActor<AMgBlockCubeActor>(AMgBlockCubeActor::StaticClass(), BaseLocation, SpawnRotation);
-		CubeActor->SetState(AMgBlockCubeActor::EBlockCube::BC_Predict);
-		CubeActor->SetCoordinate(CubeCoords[i]);
-		CubeActor->SetActorScale3D(FVector(CubeScale * 0.95f, CubeScale * 0.95f, CubeScale * 0.95f));
-		CubeActor->SetActorLocation(GetCubeLocation(CubeActor));
-		PredictCubeArray[i] = CubeActor;
+		auto PredictCube = World->SpawnActor<AMgBlockCubeActor>(AMgBlockCubeActor::StaticClass(), BaseLocation, SpawnRotation);
+		PredictCube->SetState(AMgBlockCubeActor::EBlockCube::BC_Predict);
+		PredictCube->SetCoordinate(CubeCoords[i]);
+		PredictCube->SetActorScale3D(FallingCube->GetActorScale3D());
+		PredictCube->SetActorLocation(GetCubeLocation(PredictCube));
+		PredictCubeArray[i] = PredictCube;
 	}
 
 	// rotate properly
@@ -197,7 +197,7 @@ void AMgTetrisManager::CreateNewBlock()
 		RotateBlock(EAxis::Type(FMath::RandRange(1, 3)));
 
 	PredictBlock();
-	UE_LOG(LogTemp, Log, TEXT("CreateNewCubeBlock: End"));
+	UE_LOG(LogTemp, Log, TEXT("CreateBlock: End"));
 }
 
 void AMgTetrisManager::MoveBlock(int x, int y)
@@ -206,7 +206,7 @@ void AMgTetrisManager::MoveBlock(int x, int y)
 	for (int i = 0; i < BlockCubeNum; i++)
 	{
 		auto Actor = FallingCubeArray[i];
-		auto AbsCoord = CurBlockCord + Actor->GetCoordinate() + FIntVector(x, y, 0);
+		auto AbsCoord = FallingBlockCord + Actor->GetCoordinate() + FIntVector(x, y, 0);
 		if (!CheckCubeValid(AbsCoord))
 		{
 			UE_LOG(LogTemp, Log, TEXT("MoveBlock: Not valid at %d %d %d"), AbsCoord.X, AbsCoord.Y, AbsCoord.Z);
@@ -214,7 +214,7 @@ void AMgTetrisManager::MoveBlock(int x, int y)
 		}
 	}
 
-	CurBlockCord += FIntVector(x, y, 0);
+	FallingBlockCord += FIntVector(x, y, 0);
 	for (int i = 0; i < BlockCubeNum; i++)
 	{
 		auto Actor = FallingCubeArray[i];
@@ -226,7 +226,7 @@ void AMgTetrisManager::MoveBlock(int x, int y)
 
 void AMgTetrisManager::DownBlock()
 {
-	if (CurBlockCord.Z == 0)
+	if (FallingBlockCord.Z == 0)
 	{
 		UE_LOG(LogTemp, Log, TEXT("StopBlock: Height 0"));
 		StopBlock();
@@ -236,7 +236,7 @@ void AMgTetrisManager::DownBlock()
 		for (int i = 0; i < BlockCubeNum; i++)
 		{
 			auto Actor = FallingCubeArray[i];
-			auto AbsCoord = CurBlockCord + Actor->GetCoordinate() + FIntVector(0, 0, -1);
+			auto AbsCoord = FallingBlockCord + Actor->GetCoordinate() + FIntVector(0, 0, -1);
 			if (!CheckCubeValid(AbsCoord))
 			{
 				UE_LOG(LogTemp, Log, TEXT("StopBlock: Piled at %d %d %d"), AbsCoord.X, AbsCoord.Y, AbsCoord.Z);
@@ -245,8 +245,8 @@ void AMgTetrisManager::DownBlock()
 			}
 		}
 
-		UE_LOG(LogTemp, Log, TEXT("DownBlock: Height %d -> %d"), CurBlockCord.Z, CurBlockCord.Z - 1);
-		CurBlockCord.Z--;
+		UE_LOG(LogTemp, Log, TEXT("DownBlock: Height %d -> %d"), FallingBlockCord.Z, FallingBlockCord.Z - 1);
+		FallingBlockCord.Z--;
 		for (int i = 0; i < BlockCubeNum; i++)
 		{
 			auto Actor = FallingCubeArray[i];
@@ -262,8 +262,8 @@ void AMgTetrisManager::StopBlock()
 	for (int i = 0; i < BlockCubeNum; i++)
 	{
 		auto Actor = FallingCubeArray[i];
-		auto AbsCoord = CurBlockCord + Actor->GetCoordinate();
-		int Index = GetTetrisIndex(AbsCoord);
+		auto AbsCoord = FallingBlockCord + Actor->GetCoordinate();
+		int Index = GetCubeIndex(AbsCoord);
 		Actor->SetState(AMgBlockCubeActor::EBlockCube::BC_Piled);
 		PiledCubeArray[Index] = Actor;
 		LevelCubeNum[AbsCoord.Z]++;
@@ -292,7 +292,7 @@ void AMgTetrisManager::StopBlock()
 				{
 					for (int y = 0; y < MapSize; y++)
 					{
-						int Index = GetTetrisIndex(FIntVector(x, y, z));
+						int Index = GetCubeIndex(FIntVector(x, y, z));
 						if (PiledCubeArray[Index] != NULL)
 						{
 							PiledCubeArray[Index]->Destroy();
@@ -310,13 +310,13 @@ void AMgTetrisManager::StopBlock()
 				{
 					for (int y = 0; y < MapSize; y++)
 					{
-						int Index = GetTetrisIndex(FIntVector(x, y, z));
+						int Index = GetCubeIndex(FIntVector(x, y, z));
 						auto Cube = PiledCubeArray[Index];
 						if (Cube != NULL)
 						{
 							auto NewCoord = FIntVector(x, y, z - ClearCount);
 							Cube->SetActorLocation(GetCubeLocation(NewCoord));
-							PiledCubeArray[GetTetrisIndex(NewCoord)] = Cube;
+							PiledCubeArray[GetCubeIndex(NewCoord)] = Cube;
 							PiledCubeArray[Index] = NULL;
 							MovedCubeNum++;
 						}
@@ -328,12 +328,13 @@ void AMgTetrisManager::StopBlock()
 		}
 	}
 
-	InitCubeArray(PredictCubeArray);
+	//InitCubeArray(PredictCubeArray);
+	CreateBlock();
 }
 
 void AMgTetrisManager::DropBlock()
 {
-	CurBlockCord = PredictBlockCord;
+	FallingBlockCord = PredictBlockCord;
 	for (int i = 0; i < BlockCubeNum; i++)
 	{
 		auto Actor = FallingCubeArray[i];
@@ -363,8 +364,8 @@ void AMgTetrisManager::RotateBlock(EAxis::Type AxisType)
 	for (int i = 0; i < BlockCubeNum; i++)
 	{
 		auto Actor = FallingCubeArray[i];
-		auto AbsCoord = CurBlockCord + RotateAxis(AxisType, Actor->GetCoordinate());
-		int Index = GetTetrisIndex(AbsCoord);
+		auto AbsCoord = FallingBlockCord + RotateAxis(AxisType, Actor->GetCoordinate());
+		int Index = GetCubeIndex(AbsCoord);
 		if (!CheckCubeValid(AbsCoord))
 		{
 			UE_LOG(LogTemp, Log, TEXT("RotateBlock: Failed at %d %d %d / %d"), AbsCoord.X, AbsCoord.Y, AbsCoord.Z, Index);
@@ -389,7 +390,7 @@ void AMgTetrisManager::PredictBlock()
 	{
 		PredictCubeArray[i]->SetCoordinate(FallingCubeArray[i]->GetCoordinate());
 	}
-	PredictBlockCord = CurBlockCord;
+	PredictBlockCord = FallingBlockCord;
 
 	bool bIsBlockStop = false;
 	do
@@ -420,7 +421,7 @@ void AMgTetrisManager::InitCamera()
 {
 	TetrisCamera->SetRelativeLocationAndRotation(FVector(-200.f, 200.f, 1200.f), FRotator(-50.f, 0.f, 0.f));
 	auto OurPlayerController = UGameplayStatics::GetPlayerController(this, 0);
-	OurPlayerController->SetViewTargetWithBlend(this, 0.5f);
+	OurPlayerController->SetViewTargetWithBlend(this, 1.0f);
 }
 
 void AMgTetrisManager::RotateCamera(bool bIsCcw)

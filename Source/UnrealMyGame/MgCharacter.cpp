@@ -50,6 +50,8 @@ void AMgCharacter::BeginPlay()
 			break;
 		}
 	}
+
+	TetrisInit();
 }
 
 // Called every frame
@@ -93,22 +95,27 @@ void AMgCharacter::SetupPlayerInputComponent(class UInputComponent* InputCompone
 	Super::SetupPlayerInputComponent(InputComponent);
 
 	// MyGameCode : KeyMapping
-	InputComponent->BindKey(EKeys::Up, IE_Pressed, this, &AMgCharacter::KeyUp);
-	InputComponent->BindKey(EKeys::Down, IE_Pressed, this, &AMgCharacter::KeyDown);
-	InputComponent->BindKey(EKeys::Left, IE_Pressed, this, &AMgCharacter::KeyLeft);
-	InputComponent->BindKey(EKeys::Right, IE_Pressed, this, &AMgCharacter::KeyRight);
-	InputComponent->BindKey(EKeys::SpaceBar, IE_Pressed, this, &AMgCharacter::KeySpace);
-	InputComponent->BindKey(EKeys::Z, IE_Pressed, this, &AMgCharacter::KeyZ);
-	InputComponent->BindKey(EKeys::X, IE_Pressed, this, &AMgCharacter::KeyX);
-	InputComponent->BindKey(EKeys::C, IE_Pressed, this, &AMgCharacter::KeyC);
-	InputComponent->BindKey(EKeys::Q, IE_Pressed, this, &AMgCharacter::KeyQ);
-	InputComponent->BindKey(EKeys::E, IE_Pressed, this, &AMgCharacter::KeyE);
+	InputComponent->BindKey(EKeys::One, IE_Pressed, this, &AMgCharacter::TetrisInit);
+	InputComponent->BindKey(EKeys::Two, IE_Pressed, this, &AMgCharacter::BlockCreate);
+	InputComponent->BindKey(EKeys::Three, IE_Pressed, this, &AMgCharacter::CameraInit);
+	InputComponent->BindKey(EKeys::Up, IE_Pressed, this, &AMgCharacter::BlockForward);
+	InputComponent->BindKey(EKeys::Down, IE_Pressed, this, &AMgCharacter::BlockBackward);
+	InputComponent->BindKey(EKeys::Left, IE_Pressed, this, &AMgCharacter::BlockLeft);
+	InputComponent->BindKey(EKeys::Right, IE_Pressed, this, &AMgCharacter::BlockRight);
+	InputComponent->BindKey(EKeys::W, IE_Pressed, this, &AMgCharacter::BlockForward);
+	InputComponent->BindKey(EKeys::S, IE_Pressed, this, &AMgCharacter::BlockBackward);
+	InputComponent->BindKey(EKeys::A, IE_Pressed, this, &AMgCharacter::BlockLeft);
+	InputComponent->BindKey(EKeys::D, IE_Pressed, this, &AMgCharacter::BlockRight);
+	InputComponent->BindKey(EKeys::Q, IE_Pressed, this, &AMgCharacter::CameraLeft);
+	InputComponent->BindKey(EKeys::E, IE_Pressed, this, &AMgCharacter::CameraRight);
+	InputComponent->BindKey(EKeys::Z, IE_Pressed, this, &AMgCharacter::BlockRotateX);
+	InputComponent->BindKey(EKeys::X, IE_Pressed, this, &AMgCharacter::BlockRotateY);
+	InputComponent->BindKey(EKeys::C, IE_Pressed, this, &AMgCharacter::BlockRotateZ);
+	InputComponent->BindKey(EKeys::SpaceBar, IE_Pressed, this, &AMgCharacter::BlockDrop);
+
 	// MyGameCode : ActionMapping
 	InputComponent->BindAction("ZoomIn", IE_Pressed, this, &AMgCharacter::ZoomIn);
 	InputComponent->BindAction("ZoomOut", IE_Pressed, this, &AMgCharacter::ZoomOut);
-	InputComponent->BindAction("Keyboard1", IE_Pressed, this, &AMgCharacter::Keyboard1);
-	InputComponent->BindAction("Keyboard2", IE_Pressed, this, &AMgCharacter::Keyboard2);
-	InputComponent->BindAction("Keyboard3", IE_Pressed, this, &AMgCharacter::Keyboard3);
 	// MyGameCode : AxisMapping
 	InputComponent->BindAxis("MoveForward", this, &AMgCharacter::MoveForward);
 	InputComponent->BindAxis("MoveRight", this, &AMgCharacter::MoveRight);
@@ -116,30 +123,16 @@ void AMgCharacter::SetupPlayerInputComponent(class UInputComponent* InputCompone
 	InputComponent->BindAxis("MouseY", this, &AMgCharacter::PitchCamera);
 }
 
-void AMgCharacter::KeyUp() { TetrisManager->MoveBlock(1, 0); }
-void AMgCharacter::KeyDown() { TetrisManager->MoveBlock(-1, 0); }
-void AMgCharacter::KeyLeft() { TetrisManager->MoveBlock(0, -1); }
-void AMgCharacter::KeyRight() { TetrisManager->MoveBlock(0, 1); }
-void AMgCharacter::KeySpace() { TetrisManager->DropBlock(); }
-void AMgCharacter::KeyZ() { TetrisManager->RotateBlock(EAxis::X); }
-void AMgCharacter::KeyX() { TetrisManager->RotateBlock(EAxis::Y); }
-void AMgCharacter::KeyC() { TetrisManager->RotateBlock(EAxis::Z); }
-void AMgCharacter::KeyQ() { TetrisManager->RotateCamera(false); }
-void AMgCharacter::KeyE() { TetrisManager->RotateCamera(true); }
-
-void AMgCharacter::Keyboard1()
-{
-	TetrisManager->InitGame();
-}
-void AMgCharacter::Keyboard2()
-{
-	if (TetrisManager != NULL)
-	{
-		TetrisManager->CreateNewBlock();
-	}
-}
-void AMgCharacter::Keyboard3()
-{
-	TetrisManager->InitCamera();
-}
-
+void AMgCharacter::TetrisInit() { TetrisManager->InitGame(); }
+void AMgCharacter::CameraInit() { TetrisManager->InitCamera(); }
+void AMgCharacter::CameraLeft() { TetrisManager->RotateCamera(false); }
+void AMgCharacter::CameraRight() { TetrisManager->RotateCamera(true); }
+void AMgCharacter::BlockCreate() { TetrisManager->CreateBlock(); }
+void AMgCharacter::BlockForward() { TetrisManager->MoveBlock(1, 0); }
+void AMgCharacter::BlockBackward() { TetrisManager->MoveBlock(-1, 0); }
+void AMgCharacter::BlockLeft() { TetrisManager->MoveBlock(0, -1); }
+void AMgCharacter::BlockRight() { TetrisManager->MoveBlock(0, 1); }
+void AMgCharacter::BlockRotateX() { TetrisManager->RotateBlock(EAxis::X); }
+void AMgCharacter::BlockRotateY() { TetrisManager->RotateBlock(EAxis::Y); }
+void AMgCharacter::BlockRotateZ() { TetrisManager->RotateBlock(EAxis::Z); }
+void AMgCharacter::BlockDrop() { TetrisManager->DropBlock(); }

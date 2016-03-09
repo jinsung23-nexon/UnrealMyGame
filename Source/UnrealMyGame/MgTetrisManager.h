@@ -46,7 +46,7 @@ protected:
 	TArray<int8> LevelCubeNum;
 
 	FVector BaseLocation;
-	FIntVector CurBlockCord;
+	FIntVector FallingBlockCord;
 	FIntVector PredictBlockCord;
 	FVector2D CameraInput;
 
@@ -61,11 +61,11 @@ protected:
 public:
 	void LoadBlockData();
 	void InitGame();
-	int GetTetrisIndex(const FIntVector& vec);
+	int GetCubeIndex(const FIntVector& vec);
 	bool CheckCubeValid(const FIntVector& vec);
 	FVector GetCubeLocation(const FIntVector& vec);
 	FVector GetCubeLocation(AMgBlockCubeActor* CubeActor);
-	void CreateNewBlock();
+	void CreateBlock();
 	void MoveBlock(int32 x, int32 y);
 	void DownBlock();
 	void StopBlock();

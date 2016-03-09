@@ -39,21 +39,22 @@ protected:
 	float ZoomFactor;
 	bool bZoomingIn;
 
-	void KeyUp();
-	void KeyDown();
-	void KeyLeft();
-	void KeyRight();
-	void KeySpace();
-	void KeyZ();
-	void KeyX();
-	void KeyC();
-	void KeyQ();
-	void KeyE();
+	void TetrisInit();
+	void CameraInit();
+	void CameraLeft();
+	void CameraRight();
+	void BlockCreate();
+	void BlockForward();
+	void BlockBackward();
+	void BlockLeft();
+	void BlockRight();
+	void BlockRotateX();
+	void BlockRotateY();
+	void BlockRotateZ();
+	void BlockDrop();
+
 	void ZoomIn() { bZoomingIn = true; }
 	void ZoomOut() { bZoomingIn = false; }
-	void Keyboard1();
-	void Keyboard2();
-	void Keyboard3();
 	void MoveForward(float AxisValue) { MovementInput.X = FMath::Clamp<float>(AxisValue, -1.0f, 1.0f); }
 	void MoveRight(float AxisValue) { MovementInput.Y = FMath::Clamp<float>(AxisValue, -1.0f, 1.0f); }
 	void YawCamera(float AxisValue) { CameraInput.X = FMath::Clamp<float>(AxisValue, -1.0f, 1.0f); }
