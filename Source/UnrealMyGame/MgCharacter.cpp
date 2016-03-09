@@ -125,7 +125,7 @@ void AMgCharacter::KeyZ() { TetrisManager->RotateBlock(EAxis::X); }
 void AMgCharacter::KeyX() { TetrisManager->RotateBlock(EAxis::Y); }
 void AMgCharacter::KeyC() { TetrisManager->RotateBlock(EAxis::Z); }
 void AMgCharacter::KeyQ() { TetrisManager->RotateCamera(false); }
-void AMgCharacter::KeyE() { TetrisManager->RotateCamera(false); }
+void AMgCharacter::KeyE() { TetrisManager->RotateCamera(true); }
 
 void AMgCharacter::Keyboard1()
 {

@@ -328,6 +328,7 @@ void AMgTetrisManager::StopBlock()
 		}
 	}
 
+	InitCubeArray(PredictCubeArray);
 }
 
 void AMgTetrisManager::DropBlock()
@@ -417,7 +418,7 @@ void AMgTetrisManager::PredictBlock()
 
 void AMgTetrisManager::InitCamera()
 {
-	TetrisCamera->SetRelativeLocationAndRotation(FVector(-300.f, 200.f, 1000.f), FRotator(-50.f, 0.f, 0.f));
+	TetrisCamera->SetRelativeLocationAndRotation(FVector(-200.f, 200.f, 1200.f), FRotator(-50.f, 0.f, 0.f));
 	auto OurPlayerController = UGameplayStatics::GetPlayerController(this, 0);
 	OurPlayerController->SetViewTargetWithBlend(this, 0.5f);
 }
@@ -428,7 +429,9 @@ void AMgTetrisManager::RotateCamera(bool bIsCcw)
 	auto CurLoc = CurTrans.GetLocation();
 	auto CurRot = TetrisCamera->GetComponentRotation();
 	
-	float RotateRad = PI / 180.f * CameraRotateDegree;
+	float RotateDeg = bIsCcw ? -CameraRotateDegree : CameraRotateDegree;
+	float RotateRad = PI / 180.f * RotateDeg;
+
 	FVector2D MidPoint = FVector2D(200, 200);
 	FVector2D XY1 = FVector2D(CurLoc.X, CurLoc.Y) - MidPoint;
 	FVector2D XY2 = FVector2D(XY1.X * cos(RotateRad) - XY1.Y * sin(RotateRad),
@@ -436,5 +439,5 @@ void AMgTetrisManager::RotateCamera(bool bIsCcw)
 	FVector2D NewXY = MidPoint + XY2;
 
 	TetrisCamera->SetRelativeLocation(FVector(NewXY.X, NewXY.Y, CurLoc.Z));
-	TetrisCamera->SetRelativeRotation(CurRot + FRotator(0, CameraRotateDegree, 0.f));
+	TetrisCamera->SetRelativeRotation(CurRot + FRotator(0, RotateDeg, 0.f));
 }
