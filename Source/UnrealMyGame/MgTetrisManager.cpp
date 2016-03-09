@@ -56,7 +56,7 @@ void AMgTetrisManager::Tick( float DeltaTime )
 		BlockFallSync -= DeltaTime;
 		if (BlockFallSync <= 0)
 		{
-			DownBlock();
+			MoveBlock(FIntVector(0, 0, -1), true);
 		}
 	}
 
@@ -200,60 +200,36 @@ void AMgTetrisManager::CreateBlock()
 	UE_LOG(LogTemp, Log, TEXT("CreateBlock: End"));
 }
 
-void AMgTetrisManager::MoveBlock(int x, int y)
+void AMgTetrisManager::MoveBlock(const FIntVector& MoveVec, bool ResetSync)
 {
-	UE_LOG(LogTemp, Log, TEXT("MoveBlock: %d, %d"), x, y);
+	UE_LOG(LogTemp, Log, TEXT("MoveBlock: %d, %d, %d"), MoveVec.X, MoveVec.Y, MoveVec.Z);
+	auto MovedVec = FallingBlockCord + MoveVec;
 	for (int i = 0; i < BlockCubeNum; i++)
 	{
 		auto Actor = FallingCubeArray[i];
-		auto AbsCoord = FallingBlockCord + Actor->GetCoordinate() + FIntVector(x, y, 0);
+		auto AbsCoord = MovedVec + Actor->GetCoordinate();
 		if (!CheckCubeValid(AbsCoord))
 		{
 			UE_LOG(LogTemp, Log, TEXT("MoveBlock: Not valid at %d %d %d"), AbsCoord.X, AbsCoord.Y, AbsCoord.Z);
+			if (MoveVec.Z < 0)
+			{
+				StopBlock();
+			}
 			return;
 		}
 	}
 
-	FallingBlockCord += FIntVector(x, y, 0);
+	FallingBlockCord = MovedVec;
 	for (int i = 0; i < BlockCubeNum; i++)
 	{
 		auto Actor = FallingCubeArray[i];
 		Actor->SetActorLocation(GetCubeLocation(Actor));
 	}
 
-	PredictBlock();
-}
-
-void AMgTetrisManager::DownBlock()
-{
-	if (FallingBlockCord.Z == 0)
-	{
-		UE_LOG(LogTemp, Log, TEXT("StopBlock: Height 0"));
-		StopBlock();
-	}
-	else
-	{
-		for (int i = 0; i < BlockCubeNum; i++)
-		{
-			auto Actor = FallingCubeArray[i];
-			auto AbsCoord = FallingBlockCord + Actor->GetCoordinate() + FIntVector(0, 0, -1);
-			if (!CheckCubeValid(AbsCoord))
-			{
-				UE_LOG(LogTemp, Log, TEXT("StopBlock: Piled at %d %d %d"), AbsCoord.X, AbsCoord.Y, AbsCoord.Z);
-				StopBlock();
-				return;
-			}
-		}
-
-		UE_LOG(LogTemp, Log, TEXT("DownBlock: Height %d -> %d"), FallingBlockCord.Z, FallingBlockCord.Z - 1);
-		FallingBlockCord.Z--;
-		for (int i = 0; i < BlockCubeNum; i++)
-		{
-			auto Actor = FallingCubeArray[i];
-			Actor->SetActorLocation(GetCubeLocation(Actor));
-		}
+	if (MoveVec.X != 0 || MoveVec.Y != 0)
+		PredictBlock();
+	if (ResetSync)
 		BlockFallSync = BlockFallPeriod;
-	}
 }
 
 void AMgTetrisManager::StopBlock()
@@ -278,33 +254,32 @@ void AMgTetrisManager::StopBlock()
 	BlockCubeNum = 0;
 
 	// Clear level(floor)
-	ClearLevelArray.Sort();
-	int ClearCount = 0;
 	if (ClearLevelArray.Num() > 0)
 	{
+		ClearLevelArray.Sort();
+		int ClearCount = 0;
 		for (int z = ClearLevelArray[0]; z < MapHeight; z++)
 		{
 			if (ClearLevelArray.Num() > 0 && ClearLevelArray[0] == z)
 			{
-				ClearCount++;
-				LevelCubeNum[z] = 0;
 				for (int x = 0; x < MapSize; x++)
 				{
 					for (int y = 0; y < MapSize; y++)
 					{
 						int Index = GetCubeIndex(FIntVector(x, y, z));
-						if (PiledCubeArray[Index] != NULL)
-						{
-							PiledCubeArray[Index]->Destroy();
-							PiledCubeArray[Index] = NULL;
-						}
+						check(PiledCubeArray[Index] != NULL);
+						PiledCubeArray[Index]->Destroy();
+						PiledCubeArray[Index] = NULL;
 					}
 				}
 				ClearLevelArray.RemoveAt(0);
+				ClearCount++;
+				LevelCubeNum[z] = 0;
 				UE_LOG(LogTemp, Log, TEXT("StopBlock: ClearLevel %d"), z);
 			}
 			else
 			{
+				int MovedZ = z - ClearCount;
 				int MovedCubeNum = 0;
 				for (int x = 0; x < MapSize; x++)
 				{
@@ -314,7 +289,7 @@ void AMgTetrisManager::StopBlock()
 						auto Cube = PiledCubeArray[Index];
 						if (Cube != NULL)
 						{
-							auto NewCoord = FIntVector(x, y, z - ClearCount);
+							auto NewCoord = FIntVector(x, y, MovedZ);
 							Cube->SetActorLocation(GetCubeLocation(NewCoord));
 							PiledCubeArray[GetCubeIndex(NewCoord)] = Cube;
 							PiledCubeArray[Index] = NULL;
@@ -322,8 +297,8 @@ void AMgTetrisManager::StopBlock()
 						}
 					}
 				}
-				LevelCubeNum[z - ClearCount] = MovedCubeNum;
-				UE_LOG(LogTemp, Log, TEXT("StopBlock: level %d -> %d"), z, z-ClearCount);
+				LevelCubeNum[MovedZ] = MovedCubeNum;
+				UE_LOG(LogTemp, Log, TEXT("StopBlock: level %d -> %d"), z, MovedZ);
 			}
 		}
 	}

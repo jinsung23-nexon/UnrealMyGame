@@ -66,7 +66,7 @@ public:
 	FVector GetCubeLocation(const FIntVector& vec);
 	FVector GetCubeLocation(AMgBlockCubeActor* CubeActor);
 	void CreateBlock();
-	void MoveBlock(int32 x, int32 y);
+	void MoveBlock(const FIntVector& MoveVec, bool ResetSync);
 	void DownBlock();
 	void StopBlock();
 	void DropBlock();

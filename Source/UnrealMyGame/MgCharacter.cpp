@@ -128,10 +128,10 @@ void AMgCharacter::CameraInit() { TetrisManager->InitCamera(); }
 void AMgCharacter::CameraLeft() { TetrisManager->RotateCamera(false); }
 void AMgCharacter::CameraRight() { TetrisManager->RotateCamera(true); }
 void AMgCharacter::BlockCreate() { TetrisManager->CreateBlock(); }
-void AMgCharacter::BlockForward() { TetrisManager->MoveBlock(1, 0); }
-void AMgCharacter::BlockBackward() { TetrisManager->MoveBlock(-1, 0); }
-void AMgCharacter::BlockLeft() { TetrisManager->MoveBlock(0, -1); }
-void AMgCharacter::BlockRight() { TetrisManager->MoveBlock(0, 1); }
+void AMgCharacter::BlockForward() { TetrisManager->MoveBlock(FIntVector(1, 0, 0), false); }
+void AMgCharacter::BlockBackward() { TetrisManager->MoveBlock(FIntVector(-1, 0, 0), false); }
+void AMgCharacter::BlockLeft() { TetrisManager->MoveBlock(FIntVector(0, -1, 0), false); }
+void AMgCharacter::BlockRight() { TetrisManager->MoveBlock(FIntVector(0, 1, 0), false); }
 void AMgCharacter::BlockRotateX() { TetrisManager->RotateBlock(EAxis::X); }
 void AMgCharacter::BlockRotateY() { TetrisManager->RotateBlock(EAxis::Y); }
 void AMgCharacter::BlockRotateZ() { TetrisManager->RotateBlock(EAxis::Z); }
