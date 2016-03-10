@@ -5,6 +5,14 @@
 #include "GameFramework/Actor.h"
 #include "MgBlockCubeActor.generated.h"
 
+UENUM(BlueprintType)
+enum class EBlockCube : uint8
+{
+	BC_Falling,
+	BC_Predict,
+	BC_Piled
+};
+
 UCLASS()
 class UNREALMYGAME_API AMgBlockCubeActor : public AActor
 {
@@ -20,16 +28,8 @@ public:
 	// Called every frame
 	virtual void Tick( float DeltaSeconds ) override;
 
-public:
-	UENUM()
-	enum class EBlockCube : uint8
-	{
-		BC_Falling,
-		BC_Predict,
-		BC_Piled
-	};
-
 protected:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	EBlockCube State;
 	FIntVector Coordinate;
 	UStaticMeshComponent* Cube;

@@ -20,10 +20,10 @@ void AMgTetrisHUD::DrawHUD()
 	FCanvasTextItem TextItem(FVector2D::ZeroVector, FText::GetEmpty(), TestFont, FLinearColor::Red);
 
 	TextItem.Text = FText::FromString(TEXT("UnrealMyGame"));
-	Canvas->DrawItem(TextItem, 10.0f, 10.0f);
+	Canvas->DrawItem(TextItem, Canvas->SizeX / 2 - 200.f, 10.0f);
 
 	FFormatNamedArguments Args;
 	Args.Add("ClearCubeNum", ClearCubeNum);
 	TextItem.Text = FText::Format(NSLOCTEXT("Test", "Key", "Clear cubes: {ClearCubeNum}"), Args);
-	Canvas->DrawItem(TextItem, 10.0f, 50.0f);
+	Canvas->DrawItem(TextItem, Canvas->SizeX / 2 - 200.f, 50.0f);
 }

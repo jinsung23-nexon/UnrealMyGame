@@ -180,14 +180,14 @@ void AMgTetrisManager::CreateBlock()
 	for (int i = 0; i < CubeCoords.Num(); i++)
 	{
 		auto FallingCube = World->SpawnActor<AMgBlockCubeActor>(AMgBlockCubeActor::StaticClass(), BaseLocation, SpawnRotation);
-		FallingCube->SetState(AMgBlockCubeActor::EBlockCube::BC_Falling);
+		FallingCube->SetState(EBlockCube::BC_Falling);
 		FallingCube->SetCoordinate(CubeCoords[i]);
 		FallingCube->SetActorScale3D(FVector(CubeScale * 0.95f, CubeScale * 0.95f, CubeScale * 0.95f));
 		FallingCube->SetActorLocation(GetCubeLocation(FallingCube));
 		FallingCubeArray[i] = FallingCube;
 
 		auto PredictCube = World->SpawnActor<AMgBlockCubeActor>(AMgBlockCubeActor::StaticClass(), BaseLocation, SpawnRotation);
-		PredictCube->SetState(AMgBlockCubeActor::EBlockCube::BC_Predict);
+		PredictCube->SetState(EBlockCube::BC_Predict);
 		PredictCube->SetCoordinate(CubeCoords[i]);
 		PredictCube->SetActorScale3D(FallingCube->GetActorScale3D());
 		PredictCube->SetActorLocation(GetCubeLocation(PredictCube));
@@ -242,7 +242,7 @@ void AMgTetrisManager::StopBlock()
 		auto Actor = FallingCubeArray[i];
 		auto AbsCoord = FallingBlockCord + Actor->GetCoordinate();
 		int Index = GetCubeIndex(AbsCoord);
-		Actor->SetState(AMgBlockCubeActor::EBlockCube::BC_Piled);
+		Actor->SetState(EBlockCube::BC_Piled);
 		PiledCubeArray[Index] = Actor;
 		LevelCubeNum[AbsCoord.Z]++;
 		if (LevelCubeNum[AbsCoord.Z] >= LevelCubeMax)
