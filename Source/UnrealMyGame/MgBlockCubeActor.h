@@ -32,6 +32,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	EBlockCube State;
 	FIntVector Coordinate;
+	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* Cube;
 
 	UPROPERTY(EditAnywhere, Category = "Material")
@@ -42,9 +43,11 @@ protected:
 	UMaterial* PiledMaterial;
 
 public:
-	EBlockCube GetState() { return State; }
 	const FIntVector& GetCoordinate() { return Coordinate; }
 	void SetState(EBlockCube NewState);
 	void SetCoordinate(const FIntVector& coord) { Coordinate = coord; }
+
+	UFUNCTION(BlueprintCallable, Category=CubeFunc)
+	void SetMaterialPiled();
 
 };

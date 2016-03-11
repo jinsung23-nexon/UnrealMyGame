@@ -51,6 +51,9 @@ protected:
 	FIntVector PredictBlockCord;
 	FVector2D CameraInput;
 
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class UObject> SpawnCube;
+
 	TArray<TArray<FIntVector>> BlockShpaeArray;
     TArray<AMgBlockCubeActor*> PiledCubeArray;
     TArray<AMgBlockCubeActor*> FallingCubeArray;

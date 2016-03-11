@@ -38,6 +38,9 @@ AMgTetrisManager::AMgTetrisManager()
 
 	TetrisCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	TetrisCamera->AttachTo(RootComponent);
+
+	static ConstructorHelpers::FObjectFinder<UBlueprint> CubeFinder(TEXT("Blueprint'/Game/Blueprints/BP_MgBlockCubeActor.BP_MgBlockCubeActor'"));
+	SpawnCube = CubeFinder.Object->GeneratedClass;
 }
 
 // Called when the game starts or when spawned
@@ -173,20 +176,20 @@ void AMgTetrisManager::CreateBlock()
 	FallingBlockCord = FIntVector(MapSize / 2, MapSize / 2, StartHeight - 1);
 	PredictBlockCord = FallingBlockCord;
 	BlockFallSync = BlockFallPeriod;
-	
+
 	const FRotator SpawnRotation = FRotator::ZeroRotator;
 	TArray<FIntVector> CubeCoords = BlockShpaeArray[FMath::RandRange(0, BlockShpaeArray.Num()-1)];
 	BlockCubeNum = CubeCoords.Num();
 	for (int i = 0; i < CubeCoords.Num(); i++)
 	{
-		auto FallingCube = World->SpawnActor<AMgBlockCubeActor>(AMgBlockCubeActor::StaticClass(), BaseLocation, SpawnRotation);
+		auto FallingCube = World->SpawnActor<AMgBlockCubeActor>(SpawnCube, BaseLocation, SpawnRotation);
 		FallingCube->SetState(EBlockCube::BC_Falling);
 		FallingCube->SetCoordinate(CubeCoords[i]);
 		FallingCube->SetActorScale3D(FVector(CubeScale * 0.95f, CubeScale * 0.95f, CubeScale * 0.95f));
 		FallingCube->SetActorLocation(GetCubeLocation(FallingCube));
 		FallingCubeArray[i] = FallingCube;
 
-		auto PredictCube = World->SpawnActor<AMgBlockCubeActor>(AMgBlockCubeActor::StaticClass(), BaseLocation, SpawnRotation);
+		auto PredictCube = World->SpawnActor<AMgBlockCubeActor>(SpawnCube, BaseLocation, SpawnRotation);
 		PredictCube->SetState(EBlockCube::BC_Predict);
 		PredictCube->SetCoordinate(CubeCoords[i]);
 		PredictCube->SetActorScale3D(FallingCube->GetActorScale3D());

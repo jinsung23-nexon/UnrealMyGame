@@ -65,8 +65,19 @@ void AMgBlockCubeActor::SetState(EBlockCube NewState)
 		break;
 	}
 
-	auto DynamicMaterial = UMaterialInstanceDynamic::Create(NewMaterial, this);
-	Cube->SetMaterial(0, DynamicMaterial);
+	// SetMaterial with C++ 
+	//auto DynamicMaterial = UMaterialInstanceDynamic::Create(NewMaterial, this);
+	//Cube->SetMaterial(0, DynamicMaterial);
+
+	// SetMaterial with Blueprint
+	const FString Command = FString::Printf(TEXT("SetCubeMaterial %d"), (uint8)NewState);
+	FOutputDeviceDebug debug;
+	CallFunctionByNameWithArguments(*Command, debug, this, true);
 }
 
+void AMgBlockCubeActor::SetMaterialPiled()
+{
+	auto DynamicMaterial = UMaterialInstanceDynamic::Create(PiledMaterial, this);
+	Cube->SetMaterial(0, DynamicMaterial);
+}
 
