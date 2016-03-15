@@ -13,9 +13,6 @@ struct UNREALMYGAME_API FMgBlockData
 	GENERATED_USTRUCT_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FIntVector MidVec;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<FIntVector> CubeVecArray;
 	
 };
