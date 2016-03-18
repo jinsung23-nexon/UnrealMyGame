@@ -35,3 +35,8 @@ int32 UMgBpLibrary::LoadBlockData(TArray<FMgBlockData>& BlockShapeArray)
 	return BlockCubeMax;
 }
 
+void UMgBpLibrary::SortIntArray(UPARAM(ref) TArray<int32>& Array)
+{
+	Array.Sort();
+}
+
